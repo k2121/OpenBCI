@@ -1,6 +1,6 @@
 
 # OpenBCI data log files
-openBCI_raw*.txt
+Processing_GUI/OpenBCI_GUI/SavedData/*.*
 openBCI_raw*.wav
 openBCI_raw*.zip
 

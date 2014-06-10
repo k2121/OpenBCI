@@ -44,6 +44,7 @@ final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
 //String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_relaxation.txt"; //only used if loading input data from a file
 String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
 float playback_speed_fac = 3.0f;  //make 1.0 for real-time.  larger for faster playback
+float playback_scale_fac = 4.0f;  //use this to increase or decrease the amplitude of the recorded data
 int currentTableRowIndex = 0;
 Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
@@ -61,8 +62,8 @@ int prev_time_millis = 0;
 final int nPointsPerUpdate = 50; //update screen after this many data points.  
 float yLittleBuff[] = new float[nPointsPerUpdate];
 DataStatus is_railed[];
-final int threshold_railed = int(pow(2,23)-1000);  //fully railed should be +/- 2^23, so set this threshold close to that value
-final int threshold_railed_warn = int(pow(2,23)*0.75); //set a somewhat smaller value as the warning threshold
+int threshold_railed = (int)(pow(2,23)-1000);  //fully railed should be +/- 2^23, so set this threshold close to that value
+int threshold_railed_warn = (int)(pow(2,23)*0.75f); //set a somewhat smaller value as the warning threshold
 float yLittleBuff_uV[][] = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
 
 //create objects that'll do the EEG signal processing
@@ -173,6 +174,13 @@ void setup() {
   
   println("Starting setup...");
   
+  //adjust some parameters based on playback mode
+  if (eegDataSource ==   DATASOURCE_PLAYBACKFILE) {    
+      //prepare for the fact that we've asked to scale the data
+      threshold_railed = (int)((float)threshold_railed * playback_scale_fac);
+      threshold_railed_warn = (int)((float)threshold_railed_warn * playback_scale_fac);
+  }
+  
   //prepare data variables
   dataBuffX = new float[(int)(dataBuff_len_sec * openBCI.fs_Hz)];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
@@ -244,6 +252,7 @@ void setup() {
       
       //removing first column of data from data file...the first column is a time index and not eeg data
       playbackData_table.removeColumn(0);
+
       break;
     default: 
   }
@@ -377,7 +386,8 @@ int getDataIfAvailable(int pointCounter) {
             synthesizeData(nchan, openBCI.fs_Hz, openBCI.scale_fac_uVolts_per_count, dataPacketBuff[lastReadDataPacketInd]);
             break;
           case DATASOURCE_PLAYBACKFILE: 
-            currentTableRowIndex=getPlaybackDataFromTable(playbackData_table,currentTableRowIndex,openBCI.scale_fac_uVolts_per_count, dataPacketBuff[lastReadDataPacketInd]);
+            float scale = openBCI.scale_fac_uVolts_per_count/playback_scale_fac;
+            currentTableRowIndex=getPlaybackDataFromTable(playbackData_table,currentTableRowIndex,scale,dataPacketBuff[lastReadDataPacketInd]);
             break;
           default:
             //no action

@@ -55,7 +55,7 @@ class Gui_Manager {
   int whichChannelForSpectrogram;
   
   private float fftYOffset[];
-  private float default_vertScale_uV=200.0; //this defines the Y-scale on the montage plots...this is the vertical space between traces
+ // private float default_vertScale_uV=200.0; //this defines the Y-scale on the montage plots...this is the vertical space between traces
   private float[] vertScaleFactor = {1.0f, 2.0f, 5.0f, 50.0f, 0.25f, 0.5f};
   private int vertScaleFactor_ind = 3;  //change the default
   //private float default_vertScale_uV=200.0; //this defines the Y-scale on the montage plots...this is the vertical space between traces

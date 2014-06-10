@@ -44,7 +44,7 @@ final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
 //String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_relaxation.txt"; //only used if loading input data from a file
 String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
 float playback_speed_fac = 2.5f;  //make 1.0 for real-time.  larger for faster playback
-float playback_scale_fac = 4.0f;  //use this to increase or decrease the amplitude of the recorded data
+float playback_scale_fac = 1.0f;  //use this to increase or decrease the amplitude of the recorded data
 int currentTableRowIndex = 0;
 Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number

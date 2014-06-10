@@ -33,16 +33,16 @@ OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access 
 String openBCI_portName = "COM4";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
 
 //these settings are for a single OpenBCI board
-int openBCI_baud = 115200; //baud rate from the rArduino
-final int OpenBCI_Nchannels = 8; //normal OpenBCI has 8 channels
+//int openBCI_baud = 115200; //baud rate from the rArduino
+//final int OpenBCI_Nchannels = 8; //normal OpenBCI has 8 channels
 //use this for when daisy-chaining two OpenBCI boards
-//int openBCI_baud = 2*115200; //baud rate from the Arduino
-//final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
+int openBCI_baud = 2*115200; //baud rate from the Arduino
+final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
 
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
-String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_meditation.txt"; //only used if loading input data from a file
+//String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_meditation.txt"; //only used if loading input data from a file
 //String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_relaxation.txt"; //only used if loading input data from a file
-//String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
+String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
 int currentTableRowIndex = 0;
 Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number

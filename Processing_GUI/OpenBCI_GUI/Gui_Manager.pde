@@ -57,7 +57,10 @@ class Gui_Manager {
   private float fftYOffset[];
   private float default_vertScale_uV=200.0; //this defines the Y-scale on the montage plots...this is the vertical space between traces
   private float[] vertScaleFactor = {1.0f, 2.0f, 5.0f, 50.0f, 0.25f, 0.5f};
-  private int vertScaleFactor_ind = 0;
+  private int vertScaleFactor_ind = 3;  //change the default
+  //private float default_vertScale_uV=200.0; //this defines the Y-scale on the montage plots...this is the vertical space between traces
+  private float default_vertScale_uV = vertScaleFactor[vertScaleFactor_ind];
+  //private int vertScaleFactor_ind = 0;
   float vertScale_uV=default_vertScale_uV;
   float vertScaleMin_uV_whenLog = 0.1f;
   float montage_yoffsets[];
@@ -203,7 +206,8 @@ class Gui_Manager {
     //x = calcButtonXLocation(Ibut++, win_x, w, xoffset,gutter_between_buttons);
     //fftNButton = new Button(x,y,w,h,"FFT N\n" + Nfft,fontInfo.buttonLabel_size);
    
-    set_vertScaleAsLog(true);
+    //set_vertScaleAsLog(true);
+    set_vertScaleAsLog(false);  //change the default
     x = calcButtonXLocation(Ibut++, win_x, w, xoffset,gutter_between_buttons);
     loglinPlotButton = new Button(x,y,w,h,"Vert Scale\n" + get_vertScaleAsLogText(),fontInfo.buttonLabel_size);
   

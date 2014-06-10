@@ -162,6 +162,7 @@ class HeadPlot {
       //solution, which could be really slow or could fail.  If it does poorly,
       //switch to using the algorithm above.
       int n_wide_full = int(total_width); int n_tall_full = int(total_height);
+      println("HeadPlot: computing pixelWeightFactors_multi...");
       computePixelWeightingFactors_multiScale(n_wide_full,n_tall_full);
     }
   } //end of method

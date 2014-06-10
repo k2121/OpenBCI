@@ -161,7 +161,8 @@ void setup() {
   //get playback file name, if necessary  
   if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
       if ((playbackData_fname==null) || (playbackData_fname.length() == 0)) selectInput("Select an OpenBCI TXT file: ", "fileSelected");
-      while ((playbackData_fname==null) || (playbackData_fname.length() == 0)) { /* wait until selection is complete */ }
+      while ((playbackData_fname==null) || (playbackData_fname.length() == 0)) { delay(100);/* wait until selection is complete */ }
+      println("OpenBCI: selected file: " + playbackData_fname);
   }
   
   //open window

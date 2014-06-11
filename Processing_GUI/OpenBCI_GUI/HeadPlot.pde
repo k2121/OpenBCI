@@ -173,6 +173,8 @@ class HeadPlot {
     Table elec_relXY = new Table();
     //String default_fname = "electrode_positions_default.txt";
     String default_fname = "electrode_positions_12elec_scalp9.txt";
+    //String default_fname = "electrode_positions_4x4_senseOuter_scalp9.txt";
+    //String default_fname = "electrode_positions_4x4_senseInner_scalp9.txt";
     try {
       elec_relXY = loadTable(default_fname,"header,csv"); //try loading the default file
     } catch (NullPointerException e) {};

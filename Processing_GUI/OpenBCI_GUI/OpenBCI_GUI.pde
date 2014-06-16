@@ -40,10 +40,10 @@ final int OpenBCI_Nchannels = 8; //normal OpenBCI has 8 channels
 //final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
 
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
-String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_meditation.txt"; //only used if loading input data from a file
+//String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_meditation.txt"; //only used if loading input data from a file
 //String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_relaxation.txt"; //only used if loading input data from a file
-//String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
-float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster playback
+String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
+float playback_speed_fac = 2.5f;  //make 1.0 for real-time.  larger for faster playback
 int currentTableRowIndex = 0;
 Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
@@ -79,7 +79,7 @@ int smoothFac_ind = 0;
 //plotting constants
 Gui_Manager gui;
 float default_vertScale_uV = 200.0f;
-float displayTime_sec = 10.0f;
+float displayTime_sec = 20.0f;
 float dataBuff_len_sec = displayTime_sec+3f; //needs to be wider than actual display so that filter startup is hidden
 
 //program constants
@@ -299,8 +299,8 @@ void draw() {
       ///add raw data to spectrogram...if the correct channel...
       //...look for the first channel that is active (meaning button is not active) or, if it
       //     hasn't yet sent any data, send the last channel even if the channel is off
+      boolean sendToSpectrogram = true;
       for (int Ichan=0; Ichan < nchan; Ichan++) {
-        boolean sendToSpectrogram = true;
         if (sendToSpectrogram & (!(gui.chanButtons[Ichan].isActive()) | (Ichan == (nchan-1)))) { //send data to spectrogram
           sendToSpectrogram = false;  //prevent us from sending more data after this time through
           for (int Idata=0;Idata < nPointsPerUpdate;Idata++) {

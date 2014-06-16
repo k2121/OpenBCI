@@ -95,10 +95,10 @@ class Gui_Manager {
     //setup the montage plot...the right side 
     default_vertScale_uV = default_yScale_uV;  //here is the vertical scaling of the traces
     float[] axisMontage_relPos = { 
-      left_right_split+gutter_left, 
+      gutter_left, 
       gutter_topbot+title_gutter, 
-      (1.0f-left_right_split)-gutter_left-gutter_right, 
-      available_top2bot-title_gutter
+      1.0-gutter_left-gutter_right, 
+      available_top2bot*up_down_split  - gutter_topbot - title_gutter
     }; //from left, from top, width, height
     axes_x = int(float(win_x)*axisMontage_relPos[2]);  //width of the axis in pixels
     axes_y = int(float(win_y)*axisMontage_relPos[3]);  //height of the axis in pixels
@@ -124,8 +124,10 @@ class Gui_Manager {
     axes_y = int(float(win_y)*axisSpectrogram_relPos[3]);
     gSpectrogram = new Graph2D(parent, axes_x, axes_y, false);  //last argument is wheter the axes cross at zero
     setupSpectrogram(gSpectrogram, win_x, win_y, axisMontage_relPos,displayTime_sec,fontInfo);
-    int Nspec = 256;
-    int Nstep = 32;
+    //int Nspec = 256;
+    int Nspec = Nfft;
+    //int Nstep = 64;
+    int Nstep = nPointsPerUpdate;
     spectrogram = new Spectrogram(Nspec,openBCI.fs_Hz,Nstep,displayTime_sec);
     spectrogram.clim[0] = java.lang.Math.log(gFFT.getYAxis().getMinValue());   //set the minium value for the color scale on the spectrogram
     spectrogram.clim[1] = java.lang.Math.log(gFFT.getYAxis().getMaxValue()/10.0); //set the maximum value for the color scale on the spectrogram
@@ -259,7 +261,7 @@ class Gui_Manager {
     if (montageTrace != null) montageTrace.setYScale_uV(vertScale_uV);  //the Y-axis on the montage plot is fixed...the data is simply scaled prior to plotting
     if (gFFT != null) gFFT.setYAxisMax(vertScale_uV);
     if (headPlot1 != null) headPlot1.setMaxIntensity_uV(vertScale_uV);
-    //if (gSpectrogram != null) gSpectrogram.
+    if (gSpectrogram != null) spectrogram.clim[1] = java.lang.Math.log(gFFT.getYAxis().getMaxValue()/10.0); //set the maximum value for the color scale on the spectrogram
     intensityFactorButton.setString("Vert Scale\n" + round(vertScale_uV) + "uV");
     
     //update the Yticks on the FFT plot
@@ -703,7 +705,7 @@ class Gui_Manager {
   }
   
   public void draw() {
-    headPlot1.draw();
+    //if (headPlot1 != null) headPlot1.draw();
     
     //draw montage or spectrogram
     if (showSpectrogram == false) {

@@ -2,7 +2,7 @@
 //
 // GUI for controlling the ADS1299-based OpenBCI Shield
 //
-// Created: Chip Audette, Oct 2013 - May 2014
+// Created: Chip Audette, Oct 2013 - June 2014
 //
 // Requires gwoptics graphing library for processing.  Built on V0.5.0
 // http://www.gwoptics.org/processing/gwoptics_p5lib/
@@ -79,7 +79,7 @@ int smoothFac_ind = 0;
 //plotting constants
 Gui_Manager gui;
 float default_vertScale_uV = 200.0f;
-float displayTime_sec = 5f;
+float displayTime_sec = 10.0f;
 float dataBuff_len_sec = displayTime_sec+3f; //needs to be wider than actual display so that filter startup is hidden
 
 //program constants
@@ -299,14 +299,17 @@ void draw() {
       ///add raw data to spectrogram...if the correct channel...
       //...look for the first channel that is active (meaning button is not active) or, if it
       //     hasn't yet sent any data, send the last channel even if the channel is off
-//      if (sendToSpectrogram & (!(gui.chanButtons[Ichan].isActive()) | (Ichan == (nchan-1)))) { //send data to spectrogram
-//        sendToSpectrogram = false;  //prevent us from sending more data after this time through
-//        for (int Idata=0;Idata < nPointsPerUpdate;Idata++) {
-//          gui.spectrogram.addDataPoint(yLittleBuff_uV[Ichan][Idata]);
-//          gui.tellGUIWhichChannelForSpectrogram(Ichan);
-//          //gui.spectrogram.addDataPoint(100.0f+(float)Idata);
-//        }
-//      }
+      for (int Ichan=0; Ichan < nchan; Ichan++) {
+        boolean sendToSpectrogram = true;
+        if (sendToSpectrogram & (!(gui.chanButtons[Ichan].isActive()) | (Ichan == (nchan-1)))) { //send data to spectrogram
+          sendToSpectrogram = false;  //prevent us from sending more data after this time through
+          for (int Idata=0;Idata < nPointsPerUpdate;Idata++) {
+            gui.spectrogram.addDataPoint(yLittleBuff_uV[Ichan][Idata]);
+            gui.tellGUIWhichChannelForSpectrogram(Ichan);
+            //gui.spectrogram.addDataPoint(100.0f+(float)Idata);
+          }
+        }
+      }
         
       redrawScreenNow=true;
     } 

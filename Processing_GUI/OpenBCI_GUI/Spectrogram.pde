@@ -16,7 +16,7 @@ class Spectrogram {
   //public float dT_perSlice_sec;  //time interval between slices
   public float fs_Hz;            //sample rate
   public PImage img;
-  public double clim[] = {0.0d, 1.0d};
+  public double clim[] = {0.0d, 1.0d}; //in 20*log10(uV/sqrtHz)
   private FFT localFftData;
   private float[] localDataBuff;
   private int localDataBuffCounter;

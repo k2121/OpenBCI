@@ -76,7 +76,7 @@ class Gui_Manager {
     String filterDescription, float smooth_fac) {  
 //  Gui_Manager(PApplet parent,int win_x, int win_y,int nchan,float displayTime_sec, float yScale_uV, float fs_Hz,
 //      String montageFilterText, String detectName) {
-      showSpectrogram = false;  
+      showSpectrogram = true;  
       whichChannelForSpectrogram = 0; //assume
     
      //define some layout parameters
@@ -119,17 +119,17 @@ class Gui_Manager {
     setupFFTPlot(gFFT, win_x, win_y, axisFFT_relPos,fontInfo);
         
     //setup the spectrogram plot
-//    float[] axisSpectrogram_relPos = axisMontage_relPos;
-//    axes_x = int(float(win_x)*axisSpectrogram_relPos[2]);
-//    axes_y = int(float(win_y)*axisSpectrogram_relPos[3]);
-//    gSpectrogram = new Graph2D(parent, axes_x, axes_y, false);  //last argument is wheter the axes cross at zero
-//    setupSpectrogram(gSpectrogram, win_x, win_y, axisMontage_relPos,displayTime_sec,fontInfo);
-//    int Nspec = 256;
-//    int Nstep = 32;
-//    spectrogram = new Spectrogram(Nspec,openBCI.fs_Hz,Nstep,displayTime_sec);
-//    spectrogram.clim[0] = java.lang.Math.log(gFFT.getYAxis().getMinValue());   //set the minium value for the color scale on the spectrogram
-//    spectrogram.clim[1] = java.lang.Math.log(gFFT.getYAxis().getMaxValue()/10.0); //set the maximum value for the color scale on the spectrogram
-//    updateMaxDisplayFreq();
+    float[] axisSpectrogram_relPos = axisMontage_relPos;
+    axes_x = int(float(win_x)*axisSpectrogram_relPos[2]);
+    axes_y = int(float(win_y)*axisSpectrogram_relPos[3]);
+    gSpectrogram = new Graph2D(parent, axes_x, axes_y, false);  //last argument is wheter the axes cross at zero
+    setupSpectrogram(gSpectrogram, win_x, win_y, axisMontage_relPos,displayTime_sec,fontInfo);
+    int Nspec = 256;
+    int Nstep = 32;
+    spectrogram = new Spectrogram(Nspec,openBCI.fs_Hz,Nstep,displayTime_sec);
+    spectrogram.clim[0] = java.lang.Math.log(gFFT.getYAxis().getMinValue());   //set the minium value for the color scale on the spectrogram
+    spectrogram.clim[1] = java.lang.Math.log(gFFT.getYAxis().getMaxValue()/10.0); //set the maximum value for the color scale on the spectrogram
+    updateMaxDisplayFreq();
     
     //setup the head plot...top on the left side
     float[] axisHead_relPos = axisFFT_relPos.clone();
@@ -258,7 +258,8 @@ class Gui_Manager {
     //update how the plots are scaled
     if (montageTrace != null) montageTrace.setYScale_uV(vertScale_uV);  //the Y-axis on the montage plot is fixed...the data is simply scaled prior to plotting
     if (gFFT != null) gFFT.setYAxisMax(vertScale_uV);
-    headPlot1.setMaxIntensity_uV(vertScale_uV);
+    if (headPlot1 != null) headPlot1.setMaxIntensity_uV(vertScale_uV);
+    //if (gSpectrogram != null) gSpectrogram.
     intensityFactorButton.setString("Vert Scale\n" + round(vertScale_uV) + "uV");
     
     //update the Yticks on the FFT plot
@@ -297,7 +298,7 @@ class Gui_Manager {
     }
     
     //change the head plot
-    headPlot1.set_plotColorAsLog(vertScaleAsLog);
+    if (headPlot1 != null) headPlot1.set_plotColorAsLog(vertScaleAsLog);
     
     //change the button
     if (loglinPlotButton != null) {
@@ -322,7 +323,7 @@ class Gui_Manager {
     float foo_Hz = maxDisplayFreq_Hz[maxDisplayFreq_ind];
     gFFT.setXAxisMax(foo_Hz);
     if (fftTrace != null) fftTrace.set_plotXlim(0.0f,foo_Hz);
-    //gSpectrogram.setYAxisMax(foo_Hz);
+    gSpectrogram.setYAxisMax(foo_Hz);
     
     //set the ticks
     if (foo_Hz < 38.0f) {
@@ -335,7 +336,7 @@ class Gui_Manager {
       foo_Hz = (float)floor(foo_Hz / 50.0) * 50.0f;
     }
     gFFT.setXAxisTickSpacing(foo_Hz);
-    //gSpectrogram.setYAxisTickSpacing(foo_Hz);
+    gSpectrogram.setYAxisTickSpacing(foo_Hz);
     
     if (maxDisplayFreqButton != null) maxDisplayFreqButton.setString("Max Freq\n" + round(maxDisplayFreq_Hz[maxDisplayFreq_ind]) + " Hz");
   }  
@@ -768,11 +769,11 @@ class Gui_Manager {
         //spectrogramButton.draw();
     }
     
-    if (showMontageValues) {
-      for (int Ichan = 0; Ichan < chanValuesMontage.length; Ichan++) {
-        chanValuesMontage[Ichan].draw();
-      }
-    }
+//    if (showMontageValues) {
+//      for (int Ichan = 0; Ichan < chanValuesMontage.length; Ichan++) {
+//        chanValuesMontage[Ichan].draw();
+//      }
+//    }
   }
  
 };

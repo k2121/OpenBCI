@@ -26,11 +26,11 @@ final int DATASOURCE_NORMAL =  0;        //Receive LIVE data from OpenBCI
 final int DATASOURCE_NORMAL_W_AUX =  1;  //Receive LIVE data from OpenBCI plus the Aux data recorded by the Arduino  
 final int DATASOURCE_SYNTHETIC = 2;    //Generate synthetic signals (steady noise)
 final int DATASOURCE_PLAYBACKFILE = 3; //Playback previously recorded data...see "playbackData_fname" down below
-final int eegDataSource = DATASOURCE_PLAYBACKFILE;
+final int eegDataSource = DATASOURCE_NORMAL;
 
 //Serial communications constants
 OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access to constants, create real one later
-String openBCI_portName = "COM14";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
+String openBCI_portName = "COM7";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
 
 
 //these settings are for a single OpenBCI board
@@ -424,8 +424,9 @@ void processNewData() {
     dataBuffY_filtY_uV[Ichan] = dataBuffY_uV[Ichan].clone();
   }
     
-  //if you want to, re-reference the montage to make it be a mean-head reference
-  if (false) rereferenceTheMontage(dataBuffY_filtY_uV);
+  //if you want to, re-reference the montage to difference chan4-chan3 and 6-5
+  if (true) rereferenceTheMontage(dataBuffY_filtY_uV);
+  if (true) rereferenceTheMontage(dataBuffY_uV);
   
   //update the FFT (frequency spectrum)
   for (int Ichan=0;Ichan < nchan; Ichan++) {  

@@ -23,6 +23,7 @@ import processing.core.PApplet;
 boolean movingForward = false;
 boolean turningLeft = false;
 boolean turningRight = false;
+//test
 
 //choose where to get the EEG data
 final int DATASOURCE_NORMAL =  0;        //Receive LIVE data from OpenBCI

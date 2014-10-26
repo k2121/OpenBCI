@@ -9,6 +9,8 @@
 ///////////////////////////////////////////////////////////////
 
 class HexBug {
+      
+    private int wait_millis = 5;
   
   //create inner class to wrap up a "command"
   class Command {
@@ -30,7 +32,7 @@ class HexBug {
     public int issue() {
       counter++;
       if (printReceivedCommand) println("HexBug: Command: " + name + " (" + counter + ")");
-      if (serial_h != null) serial_h.write(command_str + "\n");
+      if (serial_h != null) serial_h.write(command_str);
       return ID;
     }
   } //close definition of class Command
@@ -51,16 +53,33 @@ class HexBug {
     prev_command = command_fire.issue();
   }
   public void forward() {
-    if (prev_command != command_forward.ID) prev_command = command_fire.issue();  //issue a FIRE command on a transition
+    if (prev_command != command_forward.ID) {
+      prev_command = command_fire.issue();  //issue a FIRE command on a transition
+      waitMilliseconds(wait_millis);
+    }
     prev_command = command_forward.issue();
   }
   public void left() {
-    if (prev_command != command_left.ID) prev_command = command_fire.issue();  //issue a FIRE command on a transition
+    if (prev_command != command_left.ID) {
+      prev_command = command_fire.issue();  //issue a FIRE command on a transition
+      waitMilliseconds(wait_millis);
+    }
     prev_command = command_left.issue();
   }
   public void right() {
-    if (prev_command != command_right.ID) prev_command = command_fire.issue();  //issue a FIRE command on a transition
+    if (prev_command != command_right.ID) {
+      prev_command = command_fire.issue();  //issue a FIRE command on a transition
+      waitMilliseconds(wait_millis);
+    }
     prev_command = command_right.issue();
+  }
+  
+  public void waitMilliseconds(int dt_millis) {
+      int start_time = millis();
+      int t = millis();
+      while (t-start_time < dt_millis) {
+        t = millis();
+      }
   }
 
 }

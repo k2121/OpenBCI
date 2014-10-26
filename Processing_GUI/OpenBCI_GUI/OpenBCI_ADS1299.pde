@@ -512,18 +512,18 @@ class OpenBCI_ADS1299 {
         if (activate) {
           if ((code_P_N_Both == 0) || (code_P_N_Both == 2)) {
             //activate the P channel
-            serial_openBCI.write(command_activate_leadoffP_channel[Ichan] + "\n");
+            serial_openBCI.write(command_activate_leadoffP_channel[Ichan]);
           } else if ((code_P_N_Both == 1) || (code_P_N_Both == 2)) {
             //activate the N channel
-            serial_openBCI.write(command_activate_leadoffN_channel[Ichan] + "\n");
+            serial_openBCI.write(command_activate_leadoffN_channel[Ichan]);
           }
         } else {
           if ((code_P_N_Both == 0) || (code_P_N_Both == 2)) {
             //deactivate the P channel
-            serial_openBCI.write(command_deactivate_leadoffP_channel[Ichan] + "\n");
+            serial_openBCI.write(command_deactivate_leadoffP_channel[Ichan]);
           } else if ((code_P_N_Both == 1) || (code_P_N_Both == 2)) {
             //deactivate the N channel
-            serial_openBCI.write(command_deactivate_leadoffN_channel[Ichan] + "\n");
+            serial_openBCI.write(command_deactivate_leadoffN_channel[Ichan]);
           }          
         }
       }
@@ -534,22 +534,36 @@ class OpenBCI_ADS1299 {
     if (serial_openBCI != null) {
       if (isAuto) {
         println("OpenBCI_ADS1299: setBiasAutoState: setting bias to AUTO");
-        serial_openBCI.write(command_biasAuto + "\n");
+        serial_openBCI.write(command_biasAuto);
       } else {
         println("OpenBCI_ADS1299: setBiasAutoState: setting bias to REF ONLY");
-        serial_openBCI.write(command_biasFixed + "\n");
+        serial_openBCI.write(command_biasFixed);
       }
     }
   }
   
   int interpretAsInt32(byte[] byteArray) {     
-    //little endian
-    return int(
-      ((0xFF & byteArray[3]) << 24) | 
-      ((0xFF & byteArray[2]) << 16) |
-      ((0xFF & byteArray[1]) << 8) | 
-      (0xFF & byteArray[0])
-      );
+    if (openBCI_version < 3) {
+      //little endian...The code works but the comment might be a lie...CHIP OCT 2014
+      return int(
+        ((0xFF & byteArray[3]) << 24) | 
+        ((0xFF & byteArray[2]) << 16) |
+        ((0xFF & byteArray[1]) << 8) | 
+        (0xFF & byteArray[0])
+        );
+    } else {
+      int newInt = ( 
+        ((0xFF & byteArray[0]) << 16) |
+        ((0xFF & byteArray[1]) << 8) | 
+        (0xFF & byteArray[2])
+        );
+      if((newInt & 0x00800000) > 0){
+        newInt |= 0xFF000000;
+      }else{
+        newInt &= 0x00FFFFFF;
+      }
+      return newInt;
+    }
   }
   
 

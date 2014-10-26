@@ -83,7 +83,7 @@ class EEG_Processing_User {
         hexBug.fire(); txt = "Fire";
         isDetected = true;
       } else {
-        int Ichan = (4-1);
+        Ichan = (4-1);
         findPeakFrequency(fftData,Ichan);
         if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) { //look in alpha band
           hexBug.forward(); txt = "Forward";

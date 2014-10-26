@@ -46,7 +46,7 @@ class OpenBCI_ADS1299 {
   final static int STATE_NOCOM = 0;
   final static int STATE_COMINIT = 1;
   final static int STATE_NORMAL = 2;
-  final static int COM_INIT_MSEC = 4000; //you may need to vary this for your computer or your Arduino
+  final static int COM_INIT_MSEC = 5000; //you may need to vary this for your computer or your Arduino
   
   int[] measured_packet_length = {0,0,0,0,0};
   int measured_packet_length_ind = 0;
@@ -55,7 +55,10 @@ class OpenBCI_ADS1299 {
   final static byte BYTE_START = (byte)0xA0;
   final static byte BYTE_END = (byte)0xC0;
   
+  final static openBCI_version = 3;  //this gets overwritten when the object is instantiated
+  
   int prefered_datamode = DATAMODE_BIN;
+  boolean portIsOpen = false;
 
   
   Serial serial_openBCI = null;
@@ -80,7 +83,14 @@ class OpenBCI_ADS1299 {
   
   //constructors
   OpenBCI_ADS1299() {};  //only use this if you simply want access to some of the constants
-  OpenBCI_ADS1299(PApplet applet, String comPort, int baud, int nValuesPerPacket) {
+  OpenBCI_ADS1299(PApplet applet, String comPort, int baud, int nValuesPerPacket,int openBCI_ver) {
+    if ((openBCI_ver > 0) && (openBCI_ver < 4)) {
+      openBCI_version = openBCI_ver;
+    } else {
+      println("OpenBCI_ADS1299: Given openBCI_ver = " + openBCI_ver + " is out-of-bounds.");
+      println("    : assuming ver 3 instead...");
+      openBCI_version = 3;
+    }
     
     //choose data mode
     //println("OpenBCI_ADS1299: prefered_datamode = " + prefered_datamode + ", nValuesPerPacket%8 = " + (nValuesPerPacket % 8));
@@ -96,8 +106,11 @@ class OpenBCI_ADS1299 {
     //allocate space for data packet
     dataPacket = new DataPacket_ADS1299(nValuesPerPacket);
 
-    //prepare the serial port
-    if (serial_openBCI != null) closeSerialPort();
+    //prepare the serial port  ... close if open
+    println("port is open? ... " + portIsOpen);
+    if(portIsOpen == true){
+      closeSerialPort();
+    }
     openSerialPort(applet, comPort, baud);
     
     //open file for raw bytes
@@ -106,10 +119,22 @@ class OpenBCI_ADS1299 {
   
   //manage the serial port  
   private int openSerialPort(PApplet applet, String comPort, int baud) {
-    serial_openBCI = new Serial(applet,comPort,baud); //open the com port
-    serial_openBCI.clear(); // clear anything in the com port's buffer    
-    changeState(STATE_COMINIT);
-    return 0;
+    try {
+      println("OpenBCI_ADS1299: attempting to open serial port " + openBCI_portName);
+      serial_openBCI = new Serial(applet,comPort,baud); //open the com port
+      serial_openBCI.clear(); // clear anything in the com port's buffer    
+      portIsOpen = true;
+      println("port is open (t)? ... " + portIsOpen);
+      changeState(STATE_COMINIT);
+      return 0;
+    } 
+    catch (RuntimeException e){
+      if (e.getMessage().contains("<init>")) {
+        System.out.println("port in use, trying again later...");
+        portIsOpen = false;
+      }
+      return 0;
+    }
   }
   private int changeState(int newState) {
     state = newState;
@@ -121,14 +146,27 @@ class OpenBCI_ADS1299 {
       if ((millis() - prevState_millis) > COM_INIT_MSEC) {
         //serial_openBCI.write(command_activates + "\n"); println("Processing: OpenBCI_ADS1299: activating filters");
         changeState(STATE_NORMAL);
-        startDataTransfer(prefered_datamode);
+        
+        if (openBCI_version < 3) {
+          startDataTransfer(prefered_datamode);
+        } else {
+          startRunning();
+        }
       }
     }
     return 0;
   }    
 
   int closeSerialPort() {
-    if (serial_openBCI != null) {
+    if (openBCI_version < 3) {
+      if (serial_openBCI != null) {
+        serial_openBCI.stop();
+        serial_openBCI = null;
+        state = STATE_NOCOM;
+      }
+    } else {
+      portIsOpen = false;
+      serial_openBCI.clear();
       serial_openBCI.stop();
       serial_openBCI = null;
       state = STATE_NOCOM;
@@ -138,8 +176,13 @@ class OpenBCI_ADS1299 {
   
   //start the data transfer using the current mode
   int startDataTransfer() {
-     println("OpenBCI_ADS1299: startDataTransfer: using current dataMode...");
-    return startDataTransfer(dataMode);
+    if (openBCI_version < 3) {
+      println("OpenBCI_ADS1299: startDataTransfer: using current dataMode...");
+      return startDataTransfer(dataMode);
+    } else { 
+      println("writing \'" + command_startBinary + "\' to the serial port...");
+      serial_openBCI.write(command_startBinary);
+    }
   }
   
   //start data trasnfer using the given mode
@@ -166,7 +209,11 @@ class OpenBCI_ADS1299 {
   
   void stopDataTransfer() {
     if (serial_openBCI != null) {
-      serial_openBCI.write(command_stop + "\n");
+      if (openBCI_version < 3) {
+        serial_openBCI.write(command_stop + "\n"); //I don't know if the linefeed is needed.  I think not but I don't have time to test it now.
+      } else {
+        serial_openBCI.write(command_stop);
+      }
       serial_openBCI.clear(); // clear anything in the com port's buffer
     }
   }
@@ -188,7 +235,11 @@ class OpenBCI_ADS1299 {
       }
     }
     
-    interpretBinaryStream(inByte);  //new 2014-02-02 WEA
+    if (openBCI_version < 3) {
+      interpretBinaryStream_V1_V2(inByte);  //new 2014-02-02 WEA
+    } else {
+      interpretBinaryStream(inByte);
+    }
     return int(inByte);
   }
 
@@ -212,7 +263,10 @@ class OpenBCI_ADS1299 {
   int localChannelCounter=0;
   int PACKET_readstate = 0;
   byte[] localByteBuffer = {0,0,0,0};
-  void interpretBinaryStream(byte actbyte)
+  byte[] localAdsByteBuffer = {0,0,0};
+  byte[] localAccelByteBuffer = {0,0};
+  
+  void interpretBinaryStream_V1_V2(byte actbyte)
   { 
     //println("OpenBCI_ADS1299: interpretBinaryStream: PACKET_readstate " + PACKET_readstate);
     switch (PACKET_readstate) {
@@ -289,15 +343,145 @@ class OpenBCI_ADS1299 {
     }
   } // end of interpretBinaryStream
 
+/* **** Borrowed from Chris Viegl from his OpenBCI parser for BrainBay
+  Modified by Joel Murphy and Conor Russomanno to read OpenBCI data
+  Packet Parser for OpenBCI (1-N channel binary format):
+
+  3-byte data values are stored in 'little endian' formant in AVRs
+  so this protocol parser expects the lower bytes first.
+
+  Start Indicator: 0xA0
+  EXPECTING STANDARD PACKET LENGTH DON'T NEED: Packet_length  : 1 byte  (length = 4 bytes framenumber + 4 bytes per active channel + (optional) 4 bytes for 1 Aux value)
+  Framenumber     : 1 byte (Sequential counter of packets)
+  Channel 1 data  : 3 bytes 
+  ...
+  Channel 8 data  : 3 bytes
+  Aux Value : UP TO 6 bytes
+  End Indcator:    0xC0
+  TOTAL OF 33 bytes ALL DAY
+*/
+
+  void interpretBinaryStream(byte actbyte)
+  { 
+    //println("OpenBCI_ADS1299: interpretBinaryStream: PACKET_readstate " + PACKET_readstate);
+    switch (PACKET_readstate) {
+      case 0:  
+         //look for header byte  
+         if (actbyte == byte(0xA0)) {          // look for start indicator
+          //println("OpenBCI_ADS1299: interpretBinaryStream: found 0xA0");
+          PACKET_readstate++;
+         } 
+         break;
+      // case 1:
+      //    //look for byte that gives length of the payload  
+      //    nDataValuesInPacket = ((int)actbyte) / 4 - 1;   // get number of channels
+      //    //println("OpenBCI_ADS1299: interpretBinaryStream: nDataValuesInPacket = " + nDataValuesInPacket);
+      //    //if (nDataValuesInPacket != num_channels) { //old check, too restrictive
+      //    if ((nDataValuesInPacket < 0) || (nDataValuesInPacket > dataPacket.values.length)) {
+      //     serialErrorCounter++;
+      //     println("OpenBCI_ADS1299: interpretBinaryStream: given number of data values (" + nDataValuesInPacket + ") is not acceptable.  Ignoring packet. (" + serialErrorCounter + ")");
+      //     PACKET_readstate=0;
+      //    } else { 
+      //     localByteCounter=0; //prepare for next usage of localByteCounter
+      //     PACKET_readstate++;
+      //    }
+      //    break;
+      case 1: 
+        //check the packet counter
+        // println("case 1");
+        byte inByte = actbyte;
+        dataPacket.sampleIndex = int(inByte); //changed by JAM
+        if ((dataPacket.sampleIndex-prevSampleIndex) != 1) {
+          if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
+            serialErrorCounter++;
+            println("OpenBCI_ADS1299: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + serialErrorCounter + ")");
+          }
+        }
+        prevSampleIndex = dataPacket.sampleIndex;
+        localByteCounter=0;//prepare for next usage of localByteCounter
+        localChannelCounter=0; //prepare for next usage of localChannelCounter
+        PACKET_readstate++;
+        break;
+      case 2: 
+        // get ADS channel values 
+        // println("case 2");
+        localAdsByteBuffer[localByteCounter] = actbyte;
+        localByteCounter++;
+        if (localByteCounter==3) {
+          dataPacket.values[localChannelCounter] = interpret24bitAsInt32(localAdsByteBuffer);
+          localChannelCounter++;
+          if (localChannelCounter==8) { //nDataValuesInPacket) {  
+            // all ADS channels arrived !
+            //println("OpenBCI_ADS1299: interpretBinaryStream: localChannelCounter = " + localChannelCounter);
+            PACKET_readstate++;
+            localByteCounter = 0;
+            localChannelCounter = 0;
+            //isNewDataPacketAvailable = true;  //tell the rest of the code that the data packet is complete
+          } else { 
+            //prepare for next data channel
+            localByteCounter=0; //prepare for next usage of localByteCounter
+          }
+        }
+        break;
+      case 3:
+        // get LIS3DH channel values 2 bytes times 3 axes
+        // println("case 3");
+        localAccelByteBuffer[localByteCounter] = actbyte;
+        localByteCounter++;
+        if (localByteCounter==2) {
+          // someArrayToHoldAccelerometerData = interpret16bitAsInt32(localAccelByteBuffer);
+          localChannelCounter++;
+          if (localChannelCounter==3) { //number of accelerometer axis) {  
+            // all Accelerometer channels arrived !
+            //println("OpenBCI_ADS1299: interpretBinaryStream: localChannelCounter = " + localChannelCounter);
+            PACKET_readstate++;
+            localByteCounter = 0;
+            //isNewDataPacketAvailable = true;  //tell the rest of the code that the data packet is complete
+          } else { 
+            //prepare for next data channel
+            localByteCounter=0; //prepare for next usage of localByteCounter
+          }
+        }
+        break;
+      case 4:
+        //look for end byte
+        // println("case 4");
+        if (actbyte == byte(0xC0)) {    // if correct end delimiter found:
+          // println("... 0xC0 found");
+          //println("OpenBCI_ADS1299: interpretBinaryStream: found end byte. Setting isNewDataPacketAvailable to TRUE");
+          isNewDataPacketAvailable = true; //original place for this.  but why not put it in the previous case block
+        } else {
+          serialErrorCounter++;
+          println("Actbyte = " + actbyte);
+          println("OpenBCI_ADS1299: interpretBinaryStream: expecteding end-of-packet byte is missing.  Discarding packet. (" + serialErrorCounter + ")");
+        }
+        PACKET_readstate=0;  // either way, look for next packet
+        break;
+      default: 
+          //println("OpenBCI_ADS1299: Unknown byte: " + actbyte + " .  Continuing...");
+          println("OpenBCI_ADS1299: interpretBinaryStream: Unknown byte.  Continuing...");
+          PACKET_readstate=0;  // look for next packet
+    }
+  } // end of interpretBinaryStream
+
+
 
   //activate or deactivate an EEG channel...channel counting is zero through nchan-1
   public void changeChannelState(int Ichan,boolean activate) {
     if (serial_openBCI != null) {
       if ((Ichan >= 0) && (Ichan < command_activate_channel.length)) {
         if (activate) {
-          serial_openBCI.write(command_activate_channel[Ichan] + "\n");
+          if (openBCI_version < 3) {
+            serial_openBCI.write(command_activate_channel[Ichan] + "\n");
+          } else {
+            serial_openBCI.write(command_activate_channel[Ichan])
+          }
         } else {
-          serial_openBCI.write(command_deactivate_channel[Ichan] + "\n");
+          if (openBCI_version < 3) {
+            serial_openBCI.write(command_deactivate_channel[Ichan] + "\n");
+          } else {
+            serial_openBCI.write(command_deactivate_channel[Ichan] + "\n");
+          }
         }
       }
     }

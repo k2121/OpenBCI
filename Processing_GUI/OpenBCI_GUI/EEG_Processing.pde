@@ -39,14 +39,14 @@ class EEG_Processing_User {
   //add your own variables here
   final float min_allowed_peak_freq_Hz = 4.0f; //input, for peak frequency detection
   final float max_allowed_peak_freq_Hz = 15.0f; //input, for peak frequency detection
-  final float detection_thresh_dB = 6.0f; //how much bigger must the peak be relative to the background
+  final float detection_thresh_dB = 5.2f; //how much bigger must the peak be relative to the background
   final float[] processing_band_low_Hz = {4.0,  6.5,  9,  13.5}; //lower bound for each frequency band of interest (2D classifier only)
   final float[] processing_band_high_Hz = {6.5,  9,  12, 16.5};  //upper bound for each frequency band of interest
   DetectedPeak[] detectedPeak;  //output per channel, from peak frequency detection
   DetectedPeak[] peakPerBand;
   HexBug hexBug;
   boolean showDetectionOnGUI = true;
-  public boolean useClassfier_2DTraining = true;  //use the fancier classifier?
+  public boolean useClassfier_2DTraining = false;  //use the fancier classifier?
 
   //class constructor
   EEG_Processing_User(){
@@ -70,33 +70,64 @@ class EEG_Processing_User {
         FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
       //user functions here...
-      int Ichan = 2-1;  //which channel to act on
-      if (fftData != null) findPeakFrequency(fftData,Ichan); //find the frequency for each channel with the peak amplitude
-      if (useClassfier_2DTraining) {
-        //new processing for improved selectivity
-        if (fftData != null) findBestFrequency_2DTraining(fftData,Ichan);      
-      }
       
-      //issue new command to the Hex Bug, if there is a peak that was detected
-      if (detectedPeak[Ichan].isDetected) {
-        String txt = "";
-        if (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[1-1]) {
-          hexBug.right();txt = "Right";
-        } else if (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[2-1]) {
-          hexBug.left();txt = "Left";
-        } else if (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1]) {
-          hexBug.forward(); txt = "Forward";
-        } else if (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[4-1]) {
-          //the other way to get a LEFT command! 
-          hexBug.left();txt = "Left";
+      //assume users are on chan 2, 4, 6 (counting from 1) corresponding to left, forward, right
+      //use priority as forward, left, right
+      boolean isDetected = false;
+      String txt = "";
+      int Ichan = (4-1);
+      findPeakFrequency(fftData,Ichan);
+      if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) { //look in alpha band
+        hexBug.forward(); txt = "Forward";
+        isDetected = true;
+      } else {
+        //did not detect forward, try left
+        Ichan = (2-1);
+        findPeakFrequency(fftData,Ichan);
+        if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) {
+          hexBug.left(); txt = "Left";
+          isDetected = true;
+        } else {
+          //did not detect left, try right
+          Ichan = (6-1);
+          findPeakFrequency(fftData,Ichan);
+          if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) {
+            hexBug.right(); txt = "Right"; 
+           isDetected = true; 
+          }
         }
+      }      
+      
+      
+//      int Ichan = 2-1;  //which channel to act on
+//      if (fftData != null) findPeakFrequency(fftData,Ichan); //find the frequency for each channel with the peak amplitude
+//      if (useClassfier_2DTraining) {
+//        //new processing for improved selectivity
+//        if (fftData != null) findBestFrequency_2DTraining(fftData,Ichan);      
+//      }
+//      
+//      //issue new command to the Hex Bug, if there is a peak that was detected
+//      if (detectedPeak[Ichan].isDetected) {
+//        String txt = "";
+//        if (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[1-1]) {
+//          hexBug.right();txt = "Right";
+//        } else if (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[2-1]) {
+//          hexBug.left();txt = "Left";
+//        } else if (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1]) {
+//          hexBug.forward(); txt = "Forward";
+//        } else if (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[4-1]) {
+//          //the other way to get a LEFT command! 
+//          hexBug.left();txt = "Left";
+//        }
 
+
+    if (isDetected) {
         //print some output
         println("EEG_Processing_User: " + txt + "!, Chan " + (Ichan+1) + ", peak = " + detectedPeak[Ichan].rms_uV_perBin + " uV at " 
             + detectedPeak[Ichan].freq_Hz + " Hz with background at = " + detectedPeak[Ichan].background_rms_uV_perBin 
             + ", SNR (dB) = " + detectedPeak[Ichan].SNR_dB);        
-        
-      }
+    }
+      
   }
  
    
@@ -153,10 +184,19 @@ class EEG_Processing_User {
       
       //decide if peak is big enough to be detected
       detectedPeak[Ichan].SNR_dB = 20.0f*(float)java.lang.Math.log10(detectedPeak[Ichan].rms_uV_perBin / detectedPeak[Ichan].background_rms_uV_perBin);
-      if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB) {
-        detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
-        detectedPeak[Ichan].isDetected = true;
-      }
+ 
+      //kludge
+      //if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[0]) && (detectedPeak[Ichan].freq_Hz <= processing_band_high_Hz[0])) {
+      //  if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB-2.0) {
+      //    detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
+      //    detectedPeak[Ichan].isDetected = true;
+      //  }
+      //} else {
+        if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB) {
+          detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
+          detectedPeak[Ichan].isDetected = true;
+        }
+      //}
       
     //} // end loop over channels    
   } //end method findPeakFrequency

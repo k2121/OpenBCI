@@ -33,9 +33,7 @@ OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access 
 String openBCI_portName = "COM9";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
 
 //Choose which OpenBCI board we're using
-final int OPENBCI_V1_V2 = 0;
-final int OPENBCI_V3 = 1;
-final int openBCI_version = OPENBCI_V3;
+final int openBCI_version = 3;  //version 1 or 2 (they're the same here) or 3
 
 //these settings are for a single OpenBCI board
 int openBCI_baud = 115200; //baud rate from the rArduino
@@ -429,8 +427,10 @@ void processNewData() {
   }
     
   //if you want to, re-reference the montage to difference chan4-chan3 and 6-5
-  if (true) rereferenceTheMontage(dataBuffY_filtY_uV);
-  if (true) rereferenceTheMontage(dataBuffY_uV);
+  if (openBCI_version < 3) {
+    if (true) rereferenceTheMontage(dataBuffY_filtY_uV);
+    if (true) rereferenceTheMontage(dataBuffY_uV);
+  }
   
   //update the FFT (frequency spectrum)
   for (int Ichan=0;Ichan < nchan; Ichan++) {  
@@ -707,7 +707,7 @@ void parseKey(char val) {
      break;
     default:
      println("OpenBCI_GUI: '" + key + "' Pressed...sending to OpenBCI...");
-     if (openBCI.serial_openBCI != null) openBCI.serial_openBCI.write(key + "\n"); //send the value as ascii with a newline character
+     if (openBCI.serial_openBCI != null) openBCI.serial_openBCI.write(key); //send the value as ascii with a newline character
      break;
   }
 }

@@ -36,10 +36,12 @@ class EEG_Processing_User {
   private float fs_Hz;  //sample rate
   private int nchan;  
   
+  // THE CRITICAL DETECTION PARAMETER!!!!
+  final float detection_thresh_dB = 5.2f; //how much bigger must the peak be relative to the background
+  
   //add your own variables here
   final float min_allowed_peak_freq_Hz = 4.0f; //input, for peak frequency detection
   final float max_allowed_peak_freq_Hz = 15.0f; //input, for peak frequency detection
-  final float detection_thresh_dB = 5.2f; //how much bigger must the peak be relative to the background
   final float[] processing_band_low_Hz = {4.0,  6.5,  9,  13.5}; //lower bound for each frequency band of interest (2D classifier only)
   final float[] processing_band_high_Hz = {6.5,  9,  12, 16.5};  //upper bound for each frequency band of interest
   DetectedPeak[] detectedPeak;  //output per channel, from peak frequency detection
@@ -72,28 +74,35 @@ class EEG_Processing_User {
       //user functions here...
       
       //assume users are on chan 2, 4, 6 (counting from 1) corresponding to left, forward, right
-      //use priority as forward, left, right
+      //use priority as fire, forward, left, right
       boolean isDetected = false;
       String txt = "";
-      int Ichan = (4-1);
+      int Ichan = (8-1);
       findPeakFrequency(fftData,Ichan);
       if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) { //look in alpha band
-        hexBug.forward(); txt = "Forward";
+        hexBug.fire(); txt = "Fire";
         isDetected = true;
       } else {
-        //did not detect forward, try left
-        Ichan = (2-1);
+        int Ichan = (4-1);
         findPeakFrequency(fftData,Ichan);
-        if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) {
-          hexBug.left(); txt = "Left";
+        if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) { //look in alpha band
+          hexBug.forward(); txt = "Forward";
           isDetected = true;
         } else {
-          //did not detect left, try right
-          Ichan = (6-1);
+          //did not detect forward, try left
+          Ichan = (2-1);
           findPeakFrequency(fftData,Ichan);
           if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) {
-            hexBug.right(); txt = "Right"; 
-           isDetected = true; 
+            hexBug.left(); txt = "Left";
+            isDetected = true;
+          } else {
+            //did not detect left, try right
+            Ichan = (6-1);
+            findPeakFrequency(fftData,Ichan);
+            if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) {
+              hexBug.right(); txt = "Right"; 
+             isDetected = true; 
+            }
           }
         }
       }      

@@ -37,7 +37,7 @@ class EEG_Processing_User {
   private int nchan;  
   
   // THE CRITICAL DETECTION PARAMETER!!!!
-  final float detection_thresh_dB = 5.2f; //how much bigger must the peak be relative to the background
+  final float detection_thresh_dB = 5.25f; //how much bigger must the peak be relative to the background
   
   //add your own variables here
   final float min_allowed_peak_freq_Hz = 4.0f; //input, for peak frequency detection
@@ -80,28 +80,44 @@ class EEG_Processing_User {
       int Ichan = (8-1);
       findPeakFrequency(fftData,Ichan);
       if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) { //look in alpha band
-        hexBug.fire(); txt = "Fire";
-        isDetected = true;
+          if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB) {
+            detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
+            detectedPeak[Ichan].isDetected = true;
+            hexBug.fire(); txt = "Fire";
+            isDetected = true;
+          }
       } else {
         Ichan = (4-1);
         findPeakFrequency(fftData,Ichan);
         if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) { //look in alpha band
-          hexBug.forward(); txt = "Forward";
-          isDetected = true;
+          if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB) {
+            detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
+            detectedPeak[Ichan].isDetected = true;
+            hexBug.forward(); txt = "Forward";
+            isDetected = true;
+          }
         } else {
           //did not detect forward, try left
           Ichan = (2-1);
           findPeakFrequency(fftData,Ichan);
           if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) {
-            hexBug.left(); txt = "Left";
-            isDetected = true;
+            if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB) {
+              detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
+              detectedPeak[Ichan].isDetected = true;
+              hexBug.left(); txt = "Left";
+              isDetected = true;
+            }
           } else {
             //did not detect left, try right
             Ichan = (6-1);
             findPeakFrequency(fftData,Ichan);
             if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[3-1]) && (detectedPeak[Ichan].freq_Hz < processing_band_high_Hz[3-1])) {
-              hexBug.right(); txt = "Right"; 
-             isDetected = true; 
+              if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB) {
+                detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
+                detectedPeak[Ichan].isDetected = true;
+                hexBug.right(); txt = "Right";
+                isDetected = true;
+              }
             }
           }
         }
@@ -201,10 +217,10 @@ class EEG_Processing_User {
       //    detectedPeak[Ichan].isDetected = true;
       //  }
       //} else {
-        if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB) {
-          detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
-          detectedPeak[Ichan].isDetected = true;
-        }
+      //  if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB) {
+      //    detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
+      //    detectedPeak[Ichan].isDetected = true;
+      //  }
       //}
       
     //} // end loop over channels    
@@ -367,8 +383,10 @@ class EEG_Processing_User {
       
       //add vertical markers showing detection bands
       int nBands = processing_band_low_Hz.length;
-      String[] band_txt = {"Right", "Left", "Forward", "Left"};
-      for (int Iband=0; Iband<nBands; Iband++) {
+      //String[] band_txt = {"Right", "Left", "Forward", "Left"};
+      String[] band_txt = {"", "", "Alpha", ""};
+      //for (int Iband=0; Iband<nBands; Iband++) {
+      for (int Iband=2; Iband<3; Iband++) { // only plot Forward band
         x1 = pr.valToX(processing_band_low_Hz[Iband]); //lower bound for each frequency band of interest (2D classifier only)
         y1 = pr.valToY(0.15f);
         y2 = pr.valToY(50.0f);
@@ -389,35 +407,37 @@ class EEG_Processing_User {
       }
    
       //add horizontal lines indicating the background noise level
-      int Ichan = 2-1; //which channel to show on the GUI
-      x1 = pr.valToX(min_allowed_peak_freq_Hz);  //starting coordinate, left
-      x2 = pr.valToX(max_allowed_peak_freq_Hz);  //start coordinate, right
-      y1 = pr.valToY(detectedPeak[Ichan].background_rms_uV_perBin); //y-coordinate
-      addHorizDashedLine(pr,x1,x2,y1,0);
-       
-      if (useClassfier_2DTraining) {
-        //add symbols showing per-band peaks      
-        for (int Iband=0; Iband<peakPerBand.length; Iband++) {
-          //add required threshold level
-          x1 = pr.valToX(processing_band_low_Hz[Iband]);
-          x2 = pr.valToX(processing_band_high_Hz[Iband]);
-          float thresh_dB = peakPerBand[Iband].threshold_dB;
-          float val_uV_perBin = detectedPeak[Ichan].background_rms_uV_perBin * sqrt(pow(10.0,thresh_dB/10.0));
-          y1 = pr.valToY(val_uV_perBin); //y-coordinate
-          addHorizDashedLine(pr,x1,x2,y1,1);
-          
-          //add peak
-          x1 = pr.valToX(peakPerBand[Iband].freq_Hz);
-          y1 = pr.valToY(peakPerBand[Iband].rms_uV_perBin);
-          is_detected = peakPerBand[Iband].isDetected;
+      for (int Ichan=(2-1); Ichan < 8; Ichan += 2) {
+        //int Ichan = 2-1; //which channel to show on the GUI
+        x1 = pr.valToX(min_allowed_peak_freq_Hz);  //starting coordinate, left
+        x2 = pr.valToX(max_allowed_peak_freq_Hz);  //start coordinate, right
+        y1 = pr.valToY(detectedPeak[Ichan].background_rms_uV_perBin); //y-coordinate
+        addHorizDashedLine(pr,x1,x2,y1,0);
+         
+        if (useClassfier_2DTraining) {
+          //add symbols showing per-band peaks      
+          for (int Iband=0; Iband<peakPerBand.length; Iband++) {
+            //add required threshold level
+            x1 = pr.valToX(processing_band_low_Hz[Iband]);
+            x2 = pr.valToX(processing_band_high_Hz[Iband]);
+            float thresh_dB = peakPerBand[Iband].threshold_dB;
+            float val_uV_perBin = detectedPeak[Ichan].background_rms_uV_perBin * sqrt(pow(10.0,thresh_dB/10.0));
+            y1 = pr.valToY(val_uV_perBin); //y-coordinate
+            addHorizDashedLine(pr,x1,x2,y1,1);
+            
+            //add peak
+            x1 = pr.valToX(peakPerBand[Iband].freq_Hz);
+            y1 = pr.valToY(peakPerBand[Iband].rms_uV_perBin);
+            is_detected = peakPerBand[Iband].isDetected;
+            addMarker(pr,x1,y1,is_detected); 
+          }
+        } else {  
+          //add symbol showing overall peak
+          x1 = pr.valToX(detectedPeak[Ichan].freq_Hz);
+          y1 = pr.valToY(detectedPeak[Ichan].rms_uV_perBin);
+          is_detected = detectedPeak[Ichan].isDetected;
           addMarker(pr,x1,y1,is_detected); 
         }
-      } else {  
-        //add symbol showing overall peak
-        x1 = pr.valToX(detectedPeak[Ichan].freq_Hz);
-        y1 = pr.valToY(detectedPeak[Ichan].rms_uV_perBin);
-        is_detected = detectedPeak[Ichan].isDetected;
-        addMarker(pr,x1,y1,is_detected); 
       }
     }  
   }

@@ -144,7 +144,7 @@ class OpenBCI_ADS1299 {
   int updateState() {
     if (state == STATE_COMINIT) {
       if ((millis() - prevState_millis) > COM_INIT_MSEC) {
-        //serial_openBCI.write(command_activates + "\n"); println("Processing: OpenBCI_ADS1299: activating filters");
+        //serial_openBCI.write(command_activates); println("Processing: OpenBCI_ADS1299: activating filters");
         changeState(STATE_NORMAL);
         
         if (openBCI_version < 3) {
@@ -196,11 +196,11 @@ class OpenBCI_ADS1299 {
     println("OpenBCI_ADS1299: startDataTransfer: received command for mode = " + mode);
     switch (mode) {
       case DATAMODE_BIN:
-        serial_openBCI.write(command_startBinary + "\n");
+        serial_openBCI.write(command_startBinary);
         println("OpenBCI_ADS1299: startDataTransfer: starting binary transfer");
         break;
       case DATAMODE_BIN_WAUX:
-        serial_openBCI.write(command_startBinary_wAux + "\n");
+        serial_openBCI.write(command_startBinary_wAux);
         println("OpenBCI_ADS1299: startDataTransfer: starting binary transfer (with Aux)");
         break;
     }
@@ -209,11 +209,7 @@ class OpenBCI_ADS1299 {
   
   void stopDataTransfer() {
     if (serial_openBCI != null) {
-      if (openBCI_version < 3) {
-        serial_openBCI.write(command_stop + "\n"); //I don't know if the linefeed is needed.  I think not but I don't have time to test it now.
-      } else {
-        serial_openBCI.write(command_stop);
-      }
+      serial_openBCI.write(command_stop);
       serial_openBCI.clear(); // clear anything in the com port's buffer
     }
   }
@@ -471,17 +467,9 @@ class OpenBCI_ADS1299 {
     if (serial_openBCI != null) {
       if ((Ichan >= 0) && (Ichan < command_activate_channel.length)) {
         if (activate) {
-          if (openBCI_version < 3) {
-            serial_openBCI.write(command_activate_channel[Ichan] + "\n");
-          } else {
-            serial_openBCI.write(command_activate_channel[Ichan])
-          }
+          serial_openBCI.write(command_activate_channel[Ichan])
         } else {
-          if (openBCI_version < 3) {
-            serial_openBCI.write(command_deactivate_channel[Ichan] + "\n");
-          } else {
-            serial_openBCI.write(command_deactivate_channel[Ichan] + "\n");
-          }
+          serial_openBCI.write(command_deactivate_channel[Ichan]);
         }
       }
     }

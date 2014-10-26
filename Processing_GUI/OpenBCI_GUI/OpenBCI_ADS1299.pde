@@ -55,7 +55,7 @@ class OpenBCI_ADS1299 {
   final static byte BYTE_START = (byte)0xA0;
   final static byte BYTE_END = (byte)0xC0;
   
-  final static openBCI_version = 3;  //this gets overwritten when the object is instantiated
+  int openBCI_version = 3;  //this gets overwritten when the object is instantiated
   
   int prefered_datamode = DATAMODE_BIN;
   boolean portIsOpen = false;
@@ -182,6 +182,7 @@ class OpenBCI_ADS1299 {
     } else { 
       println("writing \'" + command_startBinary + "\' to the serial port...");
       serial_openBCI.write(command_startBinary);
+      return 0;
     }
   }
   
@@ -467,7 +468,7 @@ class OpenBCI_ADS1299 {
     if (serial_openBCI != null) {
       if ((Ichan >= 0) && (Ichan < command_activate_channel.length)) {
         if (activate) {
-          serial_openBCI.write(command_activate_channel[Ichan])
+          serial_openBCI.write(command_activate_channel[Ichan]);
         } else {
           serial_openBCI.write(command_deactivate_channel[Ichan]);
         }
@@ -531,7 +532,6 @@ class OpenBCI_ADS1299 {
   }
   
   int interpretAsInt32(byte[] byteArray) {     
-    if (openBCI_version < 3) {
       //little endian...The code works but the comment might be a lie...CHIP OCT 2014
       return int(
         ((0xFF & byteArray[3]) << 24) | 
@@ -539,8 +539,10 @@ class OpenBCI_ADS1299 {
         ((0xFF & byteArray[1]) << 8) | 
         (0xFF & byteArray[0])
         );
-    } else {
-      int newInt = ( 
+  }
+        
+  int interpret24bitAsInt32(byte[] byteArray) {
+    int newInt = ( 
         ((0xFF & byteArray[0]) << 16) |
         ((0xFF & byteArray[1]) << 8) | 
         (0xFF & byteArray[2])
@@ -551,7 +553,6 @@ class OpenBCI_ADS1299 {
         newInt &= 0x00FFFFFF;
       }
       return newInt;
-    }
   }
   
 

@@ -30,12 +30,12 @@ final int eegDataSource = DATASOURCE_NORMAL;
 
 //Serial communications constants
 OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access to constants, create real one later
-String openBCI_portName = "COM7";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
+String openBCI_portName = "COM9";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
 
 //Choose which OpenBCI board we're using
 final int OPENBCI_V1_V2 = 0;
 final int OPENBCI_V3 = 1;
-final int openBCI_version = OPENBCI_V1_V2;
+final int openBCI_version = OPENBCI_V3;
 
 //these settings are for a single OpenBCI board
 int openBCI_baud = 115200; //baud rate from the rArduino

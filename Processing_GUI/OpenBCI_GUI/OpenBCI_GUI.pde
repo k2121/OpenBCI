@@ -20,6 +20,10 @@ import java.util.*; //for Array.copyOfRange()
 import java.lang.Math; //for exp, log, sqrt...they seem better than Processing's built-in
 import processing.core.PApplet;
 
+boolean movingForward = false;
+boolean turningLeft = false;
+boolean turningRight = false;
+//test
 
 //choose where to get the EEG data
 final int DATASOURCE_NORMAL =  0;        //Receive LIVE data from OpenBCI
@@ -31,6 +35,7 @@ final int eegDataSource = DATASOURCE_NORMAL;
 //Serial communications constants
 OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access to constants, create real one later
 String openBCI_portName = "COM9";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
+
 
 //Choose which OpenBCI board we're using
 final int openBCI_version = 3;  //version 1 or 2 (they're the same here) or 3
@@ -348,6 +353,15 @@ void draw() {
     //redraw the screen...not every time, get paced by when data is being plotted    
     background(0);  //clear the screen
     gui.draw(); //draw the GUI
+  }
+  if(movingForward){
+    hexBug.forward();
+  }
+  if(turningRight){
+    hexBug.right();
+  }
+  if(turningLeft){
+    hexBug.left();
   }
 }
 
@@ -904,15 +918,18 @@ void mousePressed() {
     case Gui_Manager.GUI_PAGE_HEXBOT:
       if (gui.forwardButton.isMouseHere()) {
         gui.forwardButton.setIsActive(true);
-        hexBug.forward();
+        movingForward = true;
+//        hexBug.forward();
       }
       if (gui.leftButton.isMouseHere()) {
         gui.leftButton.setIsActive(true);
-        hexBug.left();
+        turningLeft = true;
+//        hexBug.left();
       }
       if (gui.rightButton.isMouseHere()) {
         gui.rightButton.setIsActive(true);
-        hexBug.right();
+        turningRight = true;
+//        hexBug.right();
       }
       if (gui.fireButton.isMouseHere()) {
         gui.fireButton.setIsActive(true);
@@ -969,6 +986,10 @@ void mouseReleased() {
   gui.fireButton.setIsActive(false);
   
   redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
+  
+  turningRight = false;
+  turningLeft = false;
+  movingForward = false;
 }
 
 void stopRunning() {

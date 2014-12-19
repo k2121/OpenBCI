@@ -1,6 +1,7 @@
 
 # OpenBCI data log files
 Processing_GUI/OpenBCI_GUI/SavedData/*.*
+Processing_GUI/OpenBCI_GUI/data/electrode_positions*.txt
 openBCI_raw*.wav
 openBCI_raw*.zip
 openBCI_raw*.txt

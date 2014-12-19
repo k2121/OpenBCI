@@ -39,14 +39,14 @@ class HeadPlot {
   private boolean use_polarity = true;
 
   HeadPlot(float x,float y,float w,float h,int win_x,int win_y,int n) {
-    final int n_elec = n;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
+    final int n_elec = 16;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
     nose_x = new int[3];
     nose_y = new int[3];
     electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?) 
     //electrode_relDist = new float[n_elec][n_elec];  //relative distance between electrodes (pixels)
     ref_electrode_xy = new float[2];  //x-y position of reference electrode
     electrode_rgb = new int[3][n_elec];  //rgb color for each electrode
-    font = createFont("Arial",16);
+    font = createFont("Arial",12);
     drawHeadAsContours = true; //set this to be false for slower computers
     
     rel_posX = x;
@@ -135,7 +135,7 @@ class HeadPlot {
 
     //define the electrode positions as the relative position [-1.0 +1.0] within the head
     //remember that negative "Y" is up and positive "Y" is down
-    float elec_relDiam = 0.12f; //was 0.1425 prior to 2014-03-23
+    float elec_relDiam = 0.08f; //0.12f; //was 0.1425 prior to 2014-03-23
     elec_diam = (int)(elec_relDiam*((float)circ_diam));
     setElectrodeLocations(n_elec,elec_relDiam);
     
@@ -171,10 +171,9 @@ class HeadPlot {
     //try loading the positions from a file
     int n_elec_to_load = n_elec+1;  //load the n_elec plus the reference electrode
     Table elec_relXY = new Table();
-    //String default_fname = "electrode_positions_default.txt";
-    String default_fname = "electrode_positions_12elec_scalp9.txt";
-    //String default_fname = "electrode_positions_4x4_senseOuter_scalp9.txt";
-    //String default_fname = "electrode_positions_4x4_senseInner_scalp9.txt";
+    String default_fname = "electrode_positions_default.txt"; //"electrode_positions_default.txt";
+    //String default_fname = "electrode_positions_8elec_partial_scalp_ref2.txt";
+    //String default_fname = "electrode_positions_1020AssembledHead_2ndhalf_rightearref.txt"; //"electrode_positions_default.txt";
     try {
       elec_relXY = loadTable(default_fname,"header,csv"); //try loading the default file
     } catch (NullPointerException e) {};
@@ -184,6 +183,16 @@ class HeadPlot {
       println("headPlot: electrode position file not found or was wrong size: " + default_fname);
       println("        : using defaults...");
       elec_relXY = createDefaultElectrodeLocations(default_fname,elec_relDiam);
+    }
+    
+    //remove NaNs from end of table (Assuming NaNs are blank rows in the original text file...WEA 2014-12-19)
+    for (int i=elec_relXY.getRowCount()-1; i >= 0; i--) {
+      if (Double.isNaN(elec_relXY.getFloat(i,0))) {
+        elec_relXY.removeRow(i);
+      } else {
+        //stop searching when the first non-NaN is found. 
+        break;
+      }
     }
     
     //define the actual locations of the electrodes in pixels

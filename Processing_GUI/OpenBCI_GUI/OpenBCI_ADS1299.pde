@@ -325,7 +325,7 @@ class OpenBCI_ADS1299 {
     if (ADS1299_gain_options != null) {
       return ADS1299_gain_options[cur_gain_ind];
     } else {
-      println("OpenBCI_ADS1299: getGainValue(): cannot return correct value, returning 1 instead...");
+      //println("OpenBCI_ADS1299: getGainValue(): cannot return correct value, returning 1 instead...");
       return 1; //it goes here on startup.  why?
     }
   }

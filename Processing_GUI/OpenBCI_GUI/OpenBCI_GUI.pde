@@ -663,19 +663,19 @@ void parseKey(char val) {
       break;
 
     //change gain
-//    case 'h':
-//      changeADS1299Gain(1-1); break;  //tell it which index to use in the ADS1299_gain_options array
-//    case 'j':
-//      changeADS1299Gain(2-1); break;  //tell it which index to use in the ADS1299_gain_options array
-//    case 'k':
-//      changeADS1299Gain(3-1); break;  //tell it which index to use in the ADS1299_gain_options array
-//    case 'l':
-//      changeADS1299Gain(4-1); break;  //tell it which index to use in the ADS1299_gain_options array
-//    case ';':
-//      changeADS1299Gain(5-1); break;  //tell it which index to use in the ADS1299_gain_options array
-//    case '\'':
-//      changeADS1299Gain(6-1); break;  //tell it which index to use in the ADS1299_gain_options array
-//      
+    case 'h':
+      changeADS1299Gain(1-1); break;  //tell it which index to use in the ADS1299_gain_options array
+    case 'j':
+      changeADS1299Gain(2-1); break;  //tell it which index to use in the ADS1299_gain_options array
+    case 'k':
+      changeADS1299Gain(3-1); break;  //tell it which index to use in the ADS1299_gain_options array
+    case 'l':
+      changeADS1299Gain(4-1); break;  //tell it which index to use in the ADS1299_gain_options array
+    case ';':
+      changeADS1299Gain(5-1); break;  //tell it which index to use in the ADS1299_gain_options array
+    case '\'':
+      changeADS1299Gain(6-1); break;  //tell it which index to use in the ADS1299_gain_options array
+      
 
     //change the state of the impedance measurements...deactivate the N-channels
     case 'Z':

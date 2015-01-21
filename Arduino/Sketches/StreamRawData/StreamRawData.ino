@@ -330,6 +330,21 @@ void serialEvent(){            // send an 'x' on the serial line to trigger ADSt
         activateAllChannelsToTestCondition(ADSINPUT_TESTSIG,ADSTESTSIG_AMP_2X,ADSTESTSIG_PULSE_SLOW); break;
       case ']':
         activateAllChannelsToTestCondition(ADSINPUT_TESTSIG,ADSTESTSIG_AMP_2X,ADSTESTSIG_PULSE_FAST); break;
+      
+      // command the gain of all channels
+      case 'h':
+        changeGainOnAllChannels(1); break;
+      case 'j':
+        changeGainOnAllChannels(2); break;      
+      case 'k':
+        changeGainOnAllChannels(4); break;      
+      case 'l':
+        changeGainOnAllChannels(8); break;      
+      case ';':
+        changeGainOnAllChannels(12); break;
+      case '\'': case '’':
+        changeGainOnAllChannels(24); break;
+        
         
       //other commands
       case 'n':
@@ -396,6 +411,48 @@ boolean startRunning(int OUT_TYPE) {
     is_running = true;
     return is_running;
 }
+
+//note, this just changes the setting here in the Arduino...it does NOT
+//change the gain on the ADS1299...to do that, you must re-activate
+//each channel
+int setGainCode(int gainValue) {
+  int returnVal = 0;
+  switch (gainValue) {
+    case 1:
+      gainCode = ADS_GAIN01; break;
+    case 2:
+      gainCode = ADS_GAIN02; break;
+    case 4:
+      gainCode = ADS_GAIN04; break;
+    case 6:
+      gainCode = ADS_GAIN06; break;
+    case 8:
+      gainCode = ADS_GAIN08; break;
+    case 12:
+      gainCode = ADS_GAIN12; break;
+    case 24:
+      gainCode = ADS_GAIN24; break;
+    default:
+      //do nothing
+      returnVal = -1; break;
+  }
+  return returnVal;        
+}
+
+// this changes the gain on all channels...it also activates all channels
+int changeGainOnAllChannels(int gainValue) {
+  
+  //convert the gain value into the gain code for the ADS1299  
+  int returnState = setGainCode(gainValue);
+  
+  //apply to each channel, which has the side-effect of turning it on
+  if (returnState > -1) {
+    for (int Ichan=0; Ichan < N_CHANNELS_PER_OPENBCI; Ichan++) {
+      changeChannelState_maintainRunningState(Ichan, ACTIVATE);
+    }
+  }
+}
+    
 
 int changeChannelState_maintainRunningState(int chan, int start)
 {

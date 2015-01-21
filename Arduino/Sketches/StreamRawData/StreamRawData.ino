@@ -5,9 +5,11 @@
  
  Modified January 2014.
  
- This example uses the ADS1299 Arduino Library, a software bridge between the ADS1299 TI chip and 
+ This example uses the ADS1299_V2 Arduino Library, a software bridge between the ADS1299 TI chip and 
  Arduino. See http://www.ti.com/product/ads1299 for more information about the device and the README
- folder in the ADS1299 directory for more information about the library.
+ folder in the ADS1299_V2 directory for more information about the library.
+ 
+ Modified Jan 2015.  Last complied on Arduino IDE 1.5.8.
  
  */
 typedef long int int32;
@@ -15,8 +17,8 @@ typedef long int int32;
 #define N_CHANNELS_PER_OPENBCI (8)  //number of channels on a single OpenBCI board
 
 //for using a single OpenBCI board
-#include <ADS1299Manager.h>  //for a single OpenBCI board
-ADS1299Manager ADSManager; //Uses SPI bus and pins to say data is ready.  Uses Pins 13,12,11,10,9,8,4
+#include <ADS1299Manager_V2.h>  //for a single OpenBCI board
+ADS1299Manager_V2 ADSManager; //Uses SPI bus and pins to say data is ready.  Uses Pins 13,12,11,10,9,8,4
 #define MAX_N_CHANNELS (N_CHANNELS_PER_OPENBCI)   //how many channels are available in hardware
 //#define MAX_N_CHANNELS (2*N_CHANNELS_PER_OPENBCI)   //how many channels are available in hardware...use this for daisy-chained board
 int nActiveChannels = MAX_N_CHANNELS;   //how many active channels would I like?
@@ -70,6 +72,7 @@ boolean useFilters = false;  //enable or disable as you'd like...turn off if you
 void setup() {
   //detect which version of OpenBCI we're using (is Pin2 jumped to Pin3?)
   int OpenBCI_version = OPENBCI_V2;  //assume V2
+  pinMode(A0,INPUT);
   pinMode(2,INPUT);  digitalWrite(2,HIGH); //activate pullup...for detecting which version of OpenBCI PCB
   pinMode(3,OUTPUT); digitalWrite(3,LOW);  //act as a ground pin...for detecting which version of OpenBCI PCB
   if (digitalRead(2) == LOW) OpenBCI_version = OPENBCI_V1; //check pins to see if there is a jumper.  if so, it is the older board
@@ -82,7 +85,7 @@ void setup() {
   } else {
     Serial.begin(115200);
   }
-  Serial.println(F("ADS1299-Arduino UNO - Stream Raw Data")); //read the string from Flash to save RAM
+  Serial.println(F("ADS1299_V2-Arduino UNO - Stream Raw Data")); //read the string from Flash to save RAM
   Serial.print(F("Configured as OpenBCI_Version code = "));Serial.print(OpenBCI_version); Serial.print(F(", isDaisy = "));Serial.println(ADSManager.isDaisy);
   Serial.print(F("Configured for "));Serial.print(MAX_N_CHANNELS); Serial.println(F(" Channels"));
   Serial.flush();

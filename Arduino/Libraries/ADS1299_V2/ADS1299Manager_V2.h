@@ -9,7 +9,7 @@
 #ifndef ____ADS1299Manager_V2__
 #define ____ADS1299Manager_V2__
 
-#include <ADS1299.h>
+#include <ADS1299_V2.h>
 
 //Pick which version of OpenBCI you have
 #define OPENBCI_V1 (1)    //Sept 2013
@@ -71,7 +71,7 @@
 #define PCKT_START 0xA0
 #define PCKT_END 0xC0
 
-class ADS1299Manager_V2 : public ADS1299 {
+class ADS1299Manager_V2 : public ADS1299_V2 {
   public:
     void initialize(void);                                     //initialize the ADS1299 controller.  Call once.  Assumes OpenBCI_V2
     void initialize(int version,boolean isDaisy);              //initialize the ADS1299 controller.  Call once.  Set which version of OpenBCI you're using.

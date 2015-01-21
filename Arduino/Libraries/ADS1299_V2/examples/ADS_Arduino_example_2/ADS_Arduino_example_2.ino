@@ -23,9 +23,9 @@
   
 */
 
-#include <ADS1299.h>
+#include <ADS1299_V2.h>
 
-ADS1299 ADS;                           // create an instance of ADS1299
+ADS1299_V2 ADS;                           // create an instance of ADS1299
 
 unsigned long thisTime;                
 unsigned long thatTime;

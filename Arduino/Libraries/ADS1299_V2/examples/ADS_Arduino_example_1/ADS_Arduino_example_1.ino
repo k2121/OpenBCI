@@ -19,9 +19,9 @@
   
 */
 
-#include <ADS1299.h>
+#include <ADS1299_V2.h>
 
-ADS1299 ADS;
+ADS1299_V2 ADS;
 
 void setup() {
   // don't put anything before the initialization routine for recommended POR  

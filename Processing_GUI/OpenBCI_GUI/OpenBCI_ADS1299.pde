@@ -33,6 +33,8 @@ final String[] command_activate_leadoffP_channel = {"!", "@", "#", "$", "%", "^"
 final String[] command_deactivate_leadoffP_channel = {"Q", "W", "E", "R", "T", "Y", "U", "I"};   //letters (plus shift) right below 1-8
 final String[] command_activate_leadoffN_channel = {"A", "S", "D", "F", "G", "H", "J", "K"}; //letters (plus shift) below the letters below 1-8
 final String[] command_deactivate_leadoffN_channel = {"Z", "X", "C", "V", "B", "N", "M", "<"};   //letters (plus shift) below the letters below the letters below 1-8
+final String[] command_ADS1299_gain = {"'",";","l","k","j","h"}; // change gain
+final int[] ADS1299_gain_options = {24,12,8,4,2,1};  // gain values associated with each command
 final String command_biasAuto = "`";
 final String command_biasFixed = "~";
  
@@ -66,21 +68,27 @@ class OpenBCI_ADS1299 {
   //int curBuffIndex = 0;
   DataPacket_ADS1299 dataPacket;
   boolean isNewDataPacketAvailable = false;
-  OutputStream output; //for debugging  WEA 2014-01-26
+  //OutputStream output; //for debugging  WEA 2014-01-26
   int prevSampleIndex = 0;
   int serialErrorCounter = 0;
   
   final float fs_Hz = 250.0f;  //sample rate used by OpenBCI board...set by its Arduino code
   final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
-  final float ADS1299_gain = 24;  //assumed gain setting for ADS1299.  set by its Arduino code
-  final float scale_fac_uVolts_per_count = ADS1299_Vref / (pow(2,23)-1) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
+  //final float ADS1299_gain = 24;  //assumed gain setting for ADS1299.  set by its Arduino code
+  int cur_gain_ind = 0;  //index into ADS1299_gain_options...default to largest gain, which is the first entry
+  float scale_fac_uVolts_per_count = 1.0;
   final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
   
   boolean isBiasAuto = true;
   
   //constructors
-  OpenBCI_ADS1299() {};  //only use this if you simply want access to some of the constants
+  OpenBCI_ADS1299() {  //only use this if you simply want access to some of the constants  
+    recomputeScaleFactor(); 
+  }
   OpenBCI_ADS1299(PApplet applet, String comPort, int baud, int nValuesPerPacket) {
+    
+    //compute constants
+    recomputeScaleFactor();    
     
     //choose data mode
     //println("OpenBCI_ADS1299: prefered_datamode = " + prefered_datamode + ", nValuesPerPacket%8 = " + (nValuesPerPacket % 8));
@@ -102,6 +110,7 @@ class OpenBCI_ADS1299 {
     
     //open file for raw bytes
     //output = createOutput("rawByteDumpFromProcessing.bin");  //for debugging  WEA 2014-01-26
+    
   }
   
   //manage the serial port  
@@ -179,14 +188,14 @@ class OpenBCI_ADS1299 {
     if (echoChar) print(char(inByte));
     
     //write raw unprocessed bytes to a binary data dump file
-    if (output != null) {
-      try {
-       output.write(inByte);   //for debugging  WEA 2014-01-26
-      } catch (IOException e) {
-        System.err.println("OpenBCI_ADS1299: Caught IOException: " + e.getMessage());
-        //do nothing
-      }
-    }
+//    if (output != null) {
+//      try {
+//       output.write(inByte);   //for debugging  WEA 2014-01-26
+//      } catch (IOException e) {
+//        System.err.println("OpenBCI_ADS1299: Caught IOException: " + e.getMessage());
+//        //do nothing
+//      }
+//    }
     
     interpretBinaryStream(inByte);  //new 2014-02-02 WEA
     return int(inByte);
@@ -310,6 +319,36 @@ class OpenBCI_ADS1299 {
         serial_openBCI.write(command_activate_channel[Ichan]);
       }
     }
+  }
+  
+  public int getGainValue() {
+    if (ADS1299_gain_options != null) {
+      return ADS1299_gain_options[cur_gain_ind];
+    } else {
+      println("OpenBCI_ADS1299: getGainValue(): cannot return correct value, returning 1 instead...");
+      return 1; //it goes here on startup.  why?
+    }
+  }
+  public int setGainOfAllChannels(int gainInd) {
+    int returnVal = -1;
+    
+    // give the command, and yes, it will have the side effect of activating all of the channels
+    if ((gainInd >= 0) & (gainInd < ADS1299_gain_options.length)) {
+      cur_gain_ind = gainInd;
+      returnVal = cur_gain_ind;
+      
+      //command the gain change
+      if (serial_openBCI != null) serial_openBCI.write(command_ADS1299_gain[cur_gain_ind]);
+      
+      //recompute the current scale factor
+      recomputeScaleFactor();
+    }
+    
+    return returnVal;
+  }
+  
+  private void recomputeScaleFactor() {
+    scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2,23)-1)) / ((float)getGainValue())  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment 
   }
 
   //return the state

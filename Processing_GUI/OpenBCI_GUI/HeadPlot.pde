@@ -39,7 +39,8 @@ class HeadPlot {
   private boolean use_polarity = true;
 
   HeadPlot(float x,float y,float w,float h,int win_x,int win_y,int n) {
-    final int n_elec = 16;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
+    //final int n_elec = 16;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
+    final int n_elec = n;
     nose_x = new int[3];
     nose_y = new int[3];
     electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?) 

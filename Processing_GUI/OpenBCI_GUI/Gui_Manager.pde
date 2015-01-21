@@ -37,6 +37,7 @@ class Gui_Manager {
   Button[] impedanceButtonsP;
   Button[] impedanceButtonsN;
   Button biasButton;
+  Button gainButton;
   Button intensityFactorButton;
   Button loglinPlotButton;
   Button filtBPButton;
@@ -190,6 +191,9 @@ class Gui_Manager {
     h1 = h;
     x = calcButtonXLocation(nchan, win_x, w1, xoffset, gutter_between_buttons);
     biasButton = new Button(x,y,w1,h1,"Bias\n" + "Auto",fontInfo.buttonLabel_size);
+
+    x = calcButtonXLocation(nchan+1, win_x, w1, xoffset, gutter_between_buttons);
+    gainButton = new Button(x,y,w1,h1,"Gain\n" + str(openBCI.getGainValue()),fontInfo.buttonLabel_size);
 
     //setup the buttons to control the processing and frequency displays
     int Ibut=0;    w = w_orig;    h = h;
@@ -751,6 +755,7 @@ class Gui_Manager {
           impValuesMontage[Ichan].draw();  //impedance values on montage plot
         }
         biasButton.draw();
+        gainButton.draw();
         break;
       case GUI_PAGE_HEADPLOT_SETUP:
         intensityFactorButton.draw();

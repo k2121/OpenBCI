@@ -26,18 +26,18 @@ final int DATASOURCE_NORMAL =  0;        //Receive LIVE data from OpenBCI
 final int DATASOURCE_NORMAL_W_AUX =  1;  //Receive LIVE data from OpenBCI plus the Aux data recorded by the Arduino  
 final int DATASOURCE_SYNTHETIC = 2;    //Generate synthetic signals (steady noise)
 final int DATASOURCE_PLAYBACKFILE = 3; //Playback previously recorded data...see "playbackData_fname" down below
-final int eegDataSource = DATASOURCE_NORMAL_W_AUX;
+final int eegDataSource = DATASOURCE_SYNTHETIC;
 
 //Serial communications constants
 OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access to constants, create real one later
 String openBCI_portName = "COM4";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
 
 //these settings are for a single OpenBCI board
-//int openBCI_baud = 115200; //baud rate from the rArduino
-//final int OpenBCI_Nchannels = 8; //normal OpenBCI has 8 channels
+int openBCI_baud = 115200; //baud rate from the rArduino
+final int OpenBCI_Nchannels = 8; //normal OpenBCI has 8 channels
 //use this for when daisy-chaining two OpenBCI boards
-int openBCI_baud = 2*115200; //baud rate from the Arduino
-final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
+//int openBCI_baud = 2*115200; //baud rate from the Arduino
+//final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
 
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 //String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_meditation.txt"; //only used if loading input data from a file
@@ -161,6 +161,7 @@ int win_y = 768; //window height
 //int win_y = 450;   //window height...for OpenBCI_GUI_Simpler
 void setup() {
 
+  
   //get playback file name, if necessary  
   if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
       if ((playbackData_fname==null) || (playbackData_fname.length() == 0)) selectInput("Select an OpenBCI TXT file: ", "fileSelected");
@@ -660,7 +661,22 @@ void parseKey(char val) {
     case 'K':
       Ichan = 8; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
       break;
-      
+
+    //change gain
+//    case 'h':
+//      changeADS1299Gain(1-1); break;  //tell it which index to use in the ADS1299_gain_options array
+//    case 'j':
+//      changeADS1299Gain(2-1); break;  //tell it which index to use in the ADS1299_gain_options array
+//    case 'k':
+//      changeADS1299Gain(3-1); break;  //tell it which index to use in the ADS1299_gain_options array
+//    case 'l':
+//      changeADS1299Gain(4-1); break;  //tell it which index to use in the ADS1299_gain_options array
+//    case ';':
+//      changeADS1299Gain(5-1); break;  //tell it which index to use in the ADS1299_gain_options array
+//    case '\'':
+//      changeADS1299Gain(6-1); break;  //tell it which index to use in the ADS1299_gain_options array
+//      
+
     //change the state of the impedance measurements...deactivate the N-channels
     case 'Z':
       Ichan = 1; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
@@ -861,6 +877,10 @@ void mousePressed() {
       if (gui.biasButton.isMouseHere()) { 
         gui.biasButton.setIsActive(true);
         setBiasState(!openBCI.isBiasAuto);
+      }
+      if (gui.gainButton.isMouseHere()) {
+        gui.gainButton.setIsActive(true);
+        incrementADS1299Gain();
       }      
       break;
     case Gui_Manager.GUI_PAGE_HEADPLOT_SETUP:
@@ -932,6 +952,7 @@ void mouseReleased() {
   gui.showPolarityButton.setIsActive(false);
   gui.maxDisplayFreqButton.setIsActive(false);
   gui.biasButton.setIsActive(false);
+  gui.gainButton.setIsActive(false);
   redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
 }
 
@@ -1180,6 +1201,27 @@ void fileSelected(File selection) {  //called by the Open File dialog box after 
   } else {
     //inputFile = selection;
     playbackData_fname = selection.getAbsolutePath();
+  }
+}
+
+void incrementADS1299Gain() {
+  int new_gain_ind = (openBCI.cur_gain_ind + 1) % (ADS1299_gain_options.length);
+  changeADS1299Gain(new_gain_ind);
+}
+
+void changeADS1299Gain(int gainIndex) {
+  //tell the ADS1299 to change the gain for all the channels, which has the side effect of
+  //activating all of the channels, so also change the channel buttons to reflect this
+  int returnedGainIndex = openBCI.setGainOfAllChannels(gainIndex);
+  
+  //set gain button display
+  gui.gainButton.but_txt = "Gain\n" + str(openBCI.getGainValue());
+  
+  //if it was valid, change all the channel buttons "on" to reflect that they've been activated
+  if (returnedGainIndex > 0) {
+    for (int Ichan = 0; Ichan < gui.chanButtons.length; Ichan++) {
+      gui.chanButtons[Ichan].setIsActive(false); //an active channel is a light-colored NOT-ACTIVE button
+    }
   }
 }
 

@@ -9,7 +9,7 @@ class EEG_Processing_User {
  
   //class constructor
   EEG_Processing_User(int NCHAN, float sample_rate_Hz) {
-      nchan = NCHAN;
+    nchan = NCHAN;
     fs_Hz = sample_rate_Hz;
   }
   

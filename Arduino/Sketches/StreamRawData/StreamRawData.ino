@@ -468,7 +468,7 @@ int changeGainOnAllChannels(int gainValue) {
 }
     
 
-int changeChannelState_maintainRunningState(int chan, int start)
+int changeChannelState_maintainRunningState(int chan_oneRef, int start) //channel # starts at one, not zero
 {
   boolean is_running_when_called = is_running;
   int cur_outputType = outputType;
@@ -477,12 +477,12 @@ int changeChannelState_maintainRunningState(int chan, int start)
   stopRunning();
   if (start == true) {
     Serial.print(F("Activating channel "));
-    Serial.println(chan);
-    ADSManager.activateChannel(chan,gainCode,inputType);
+    Serial.println(chan_oneRef);
+    ADSManager.activateChannel(chan_oneRef,gainCode,inputType);
   } else {
     Serial.print(F("Deactivating channel "));
-    Serial.println(chan);
-    ADSManager.deactivateChannel(chan);
+    Serial.println(chan_oneRef);
+    ADSManager.deactivateChannel(chan_oneRef);
   }
   
   //restart, if it was running before
@@ -491,7 +491,7 @@ int changeChannelState_maintainRunningState(int chan, int start)
   }
 }
 
-int changeChannelLeadOffDetection_maintainRunningState(int chan, int start, int code_P_N_Both)
+int changeChannelLeadOffDetection_maintainRunningState(int chan_oneRef, int start, int code_P_N_Both) //channel # starts at one, not zero
 {
   boolean is_running_when_called = is_running;
   int cur_outputType = outputType;
@@ -500,14 +500,14 @@ int changeChannelLeadOffDetection_maintainRunningState(int chan, int start, int 
   stopRunning();
   if (start == true) {
     Serial.print(F("Activating channel "));
-    Serial.print(chan);
+    Serial.print(chan_oneRef);
     Serial.println(F(" Lead-Off Detection"));
-    ADSManager.changeChannelLeadOffDetection(chan,ON,code_P_N_Both);
+    ADSManager.changeChannelLeadOffDetection(chan_oneRef,ON,code_P_N_Both);
   } else {
     Serial.print(F("Deactivating channel "));
-    Serial.print(chan);
+    Serial.print(chan_oneRef);
     Serial.println(F(" Lead-Off Detection"));
-    ADSManager.changeChannelLeadOffDetection(chan,OFF,code_P_N_Both);
+    ADSManager.changeChannelLeadOffDetection(chan_oneRef,OFF,code_P_N_Both);
   }
   
   //restart, if it was running before

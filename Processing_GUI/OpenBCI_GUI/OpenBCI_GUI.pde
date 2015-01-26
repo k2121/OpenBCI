@@ -2,7 +2,7 @@
 //
 // GUI for controlling the ADS1299-based OpenBCI Shield
 //
-// Created: Chip Audette, Oct 2013 - May 2014
+// Created: Chip Audette, Oct 2013 - Jan 2015
 //
 // Requires gwoptics graphing library for processing.  Built on V0.5.0
 // http://www.gwoptics.org/processing/gwoptics_p5lib/
@@ -32,10 +32,12 @@ final int eegDataSource = DATASOURCE_NORMAL;
 OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access to constants, create real one later
 String openBCI_portName = "COM4";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
 
-//these settings are for a single OpenBCI board
+
+// **** 8-chan or 16-chan board **** ??????????????????????????
+// // these settings are for a single 8-chan OpenBCI board
 //int openBCI_baud = 115200; //baud rate from the rArduino
 //final int OpenBCI_Nchannels = 8; //normal OpenBCI has 8 channels
-//use this for when daisy-chaining two OpenBCI boards
+// //use this for when daisy-chained 16-chan OpenBCI boards
 int openBCI_baud = 2*115200; //baud rate from the Arduino
 final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
 

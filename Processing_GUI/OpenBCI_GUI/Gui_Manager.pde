@@ -189,14 +189,15 @@ class Gui_Manager {
       impedanceButtonsN[Ibut] = new Button(x,y+h-h1,w1,h1,"Imp N" + (Ibut+1),fontInfo.buttonLabel_size);
     }
     h1 = h;
-    x = calcButtonXLocation(nchan, win_x, w1, xoffset, gutter_between_buttons);
+    int Ibut = min(nchan,8);  //assume that there can only be a max of 8 buttons because, for 16 chan, buttons 9-16 aren't actually drawn
+    x = calcButtonXLocation(Ibut, win_x, w1, xoffset, gutter_between_buttons);
     biasButton = new Button(x,y,w1,h1,"Bias\n" + "Auto",fontInfo.buttonLabel_size);
 
-    x = calcButtonXLocation(nchan+1, win_x, w1, xoffset, gutter_between_buttons);
+    x = calcButtonXLocation(Ibut+1, win_x, w1, xoffset, gutter_between_buttons);
     gainButton = new Button(x,y,w1,h1,"Gain\n" + str(openBCI.getGainValue()),fontInfo.buttonLabel_size);
 
     //setup the buttons to control the processing and frequency displays
-    int Ibut=0;    w = w_orig;    h = h;
+    Ibut=0;    w = w_orig;    h = h;
     
     x = calcButtonXLocation(Ibut++, win_x, w, xoffset,gutter_between_buttons);
     filtBPButton = new Button(x,y,w,h,"BP Filt\n" + eegProcessing.getShortFilterDescription(),fontInfo.buttonLabel_size);

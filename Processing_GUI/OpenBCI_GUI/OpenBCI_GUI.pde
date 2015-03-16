@@ -47,7 +47,7 @@ final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
 //String playbackData_fname = "SavedData\\openBCI_raw_2014-11-20_07-04-33_1stAssembledHead_ref8_cal.txt"; //12 channel, inject signal into individual channels in sequence
 //String playbackData_fname = "EEG_Data\\openBCI_raw_2014-05-29_10-18-13_calibrated_Chan1-12_ref7.txt"; //12 channel, inject calibrated signal to get response at each sense electrode
 String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
-float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster playback
+float playback_speed_fac = 2.0f;  //make 1.0 for real-time.  larger for faster playback
 
 int currentTableRowIndex = 0;
 Table_CSV playbackData_table;

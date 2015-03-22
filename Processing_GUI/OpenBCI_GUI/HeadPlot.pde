@@ -175,6 +175,7 @@ class HeadPlot {
     String default_fname = "electrode_positions_finaltest1_rightearref_newmontage2.txt";//electrode_positions_default.txt";//"electrode_positions_default_16.txt"; //
     //String default_fname = "electrode_positions_8elec_partial_scalp_ref2.txt";
     //String default_fname = "electrode_positions_cap_15.txt"; //"electrode_positions_default.txt";
+    //if (n_elec > 16) default_fname = "electrode_positions_Dartmouth.txt";
     try {
       elec_relXY = loadTable(default_fname,"header,csv"); //try loading the default file
     } catch (NullPointerException e) {};

@@ -162,14 +162,15 @@ class Gui_Manager {
     int xoffset = x + w + (int)(2*gutter_between_buttons*win_x);
     w = w;   //button width
     int w_orig = w;
-    //if (nchan > 10) w -= (nchan-8)*2; //make the buttons skinnier
-    int nChanBut = min(nchan,8);
+    int nChanBut = nchan;
+    if (nChanBut == 16) nChanBut = min(nChanBut,8);  //for OpenBCI V1/V2, where the chan 9-16 are linked to 1-8
+    if (nChanBut > 10) w = int(w*float(8)/float(nChanBut));
     chanButtons = new Button[nChanBut];
     String txt;
     for (int Ibut = 0; Ibut < nChanBut; Ibut++) {
       x = calcButtonXLocation(Ibut, win_x, w, xoffset,gutter_between_buttons);
       txt = "Chan\n" + Integer.toString(Ibut+1);
-      if (nchan > 8+Ibut) txt = txt + "+" + Integer.toString(Ibut+1+8);
+      if ((nchan==16) && (nChanBut==8)) txt = txt + "+" + Integer.toString(Ibut+1+8);
       chanButtons[Ibut] = new Button(x,y,w,h,txt,fontInfo.buttonLabel_size);
     }
     
@@ -178,18 +179,18 @@ class Gui_Manager {
     int vertspace_pix = max(1,int(gutter_between_buttons*win_x/4));
     int w1 = w_orig;  //use same width as for buttons above
     int h1 = h/2-vertspace_pix;  //use buttons with half the height
-    impedanceButtonsP = new Button[nchan];
-    for (int Ibut = 0; Ibut < nchan; Ibut++) {
+    impedanceButtonsP = new Button[nChanBut];
+    for (int Ibut = 0; Ibut < nChanBut; Ibut++) {
       x = calcButtonXLocation(Ibut, win_x, w1, xoffset, gutter_between_buttons);
       impedanceButtonsP[Ibut] = new Button(x,y,w1,h1,"Imp P" + (Ibut+1),fontInfo.buttonLabel_size);
     }    
-    impedanceButtonsN = new Button[nchan];
-    for (int Ibut = 0; Ibut < nchan; Ibut++) {
+    impedanceButtonsN = new Button[nChanBut];
+    for (int Ibut = 0; Ibut < nChanBut; Ibut++) {
       x = calcButtonXLocation(Ibut, win_x, w1, xoffset, gutter_between_buttons);
       impedanceButtonsN[Ibut] = new Button(x,y+h-h1,w1,h1,"Imp N" + (Ibut+1),fontInfo.buttonLabel_size);
     }
     h1 = h;
-    int Ibut = min(nchan,8);  //assume that there can only be a max of 8 buttons because, for 16 chan, buttons 9-16 aren't actually drawn
+    int Ibut = nChanBut;  
     x = calcButtonXLocation(Ibut, win_x, w1, xoffset, gutter_between_buttons);
     biasButton = new Button(x,y,w1,h1,"Bias\n" + "Auto",fontInfo.buttonLabel_size);
 

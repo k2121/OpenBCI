@@ -30,21 +30,21 @@ final int eegDataSource = DATASOURCE_NORMAL;
 
 //Serial communications constants
 OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access to constants, create real one later
-String openBCI_portName = "COM4";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
+String openBCI_portName = "COM7";   /************** CHANGE THIS TO MATCH THE COM PORT REPORTED ON *YOUR* COMPUTER *****************/
 
 
 // **** 8-chan or 16-chan board **** ??????????????????????????
 // // these settings are for a single 8-chan OpenBCI board
-//int openBCI_baud = 115200; //baud rate from the rArduino
-//final int OpenBCI_Nchannels = 8; //normal OpenBCI has 8 channels
+int openBCI_baud = 115200; //baud rate from the rArduino
+final int OpenBCI_Nchannels = 8; //normal OpenBCI has 8 channels
 // //use this for when daisy-chained 16-chan OpenBCI boards
-int openBCI_baud = 2*115200; //baud rate from the Arduino
-final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
+//int openBCI_baud = 2*115200; //baud rate from the Arduino
+//final int OpenBCI_Nchannels = 16; //daisy chain has 16 channels
 
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 //String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_meditation.txt"; //only used if loading input data from a file
 //String playbackData_fname = "EEG_Data\\openBCI_2013-12-24_relaxation.txt"; //only used if loading input data from a file
-String playbackData_fname = "SavedData\\openBCI_raw_2014-11-20_07-04-33_1stAssembledHead_ref8_cal.txt"; //12 channel, inject signal into individual channels in sequence
+String playbackData_fname = "SavedData\\openBCI_raw_2015-03-20_14-51-47_finaltest2_createCal.txt"; //12 channel, inject signal into individual channels in sequence
 //String playbackData_fname = "EEG_Data\\openBCI_raw_2014-05-29_10-18-13_calibrated_Chan1-12_ref7.txt"; //12 channel, inject calibrated signal to get response at each sense electrode
 //String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
 float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster playback

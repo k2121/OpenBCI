@@ -42,7 +42,7 @@ class Table_CSV extends Table {
           setRowCount(row << 1);
         }
         if (row == 0 && header) {
-          setColumnTitles(tsv ? PApplet.split(line, '\t') : splitLineCSV(line));
+          setColumnTitles(tsv ? PApplet.split(line, '\t') : splitLineCSV(line, BufferedReader));
           header = false;
         } 
         else {
